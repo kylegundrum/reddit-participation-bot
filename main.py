@@ -1,19 +1,18 @@
 import praw
 import time
 
-# configuration
-SUBREDDIT_NAME = "kg_bot_tests"
-REQUIRED_RESPONSE_MINUTES = 180
-REMOVED_MESSAGE = ("OP must reply within 3 hours per subreddit rules. "
-                   "Since you haven't replied, this post has been removed.\n\n"
-                   "If you disagree with this decision, oh well, this is a test.")
-
 # setup
 
 # uses config details from praw.ini file
 reddit = praw.Reddit()
-
 me = reddit.user.me()
+
+# configuration
+SUBREDDIT_NAME = reddit.config.custom["subreddit_name"]
+REQUIRED_RESPONSE_MINUTES = 180
+REMOVED_MESSAGE = ("OP must reply within X hours per subreddit rules. "
+                   "Since you haven't replied, this post has been removed.\n\n"
+                   "If you disagree with this decision, oh well, this is a sample message.")
 
 
 def check_submission_reply_authors(submission):
@@ -44,11 +43,11 @@ if __name__ == "__main__":
 
     now = time.time()
     required_start = now - REQUIRED_RESPONSE_MINUTES * 60
-    required_end = now - (REQUIRED_RESPONSE_MINUTES + 24 * 60) * 60
+    required_end = now - (REQUIRED_RESPONSE_MINUTES + 60) * 60
 
     # get list of submissions created between REQUIRED_RESPONSE_MINUTES ago and one hour later
     submissions_list = [
-        x for x in new_submissions if x.created_utc >= required_end # if x.created_utc <= required_start and x.created_utc >= required_end
+        x for x in new_submissions if x.created_utc <= required_start and x.created_utc >= required_end
     ]
 
     for submission in submissions_list:
@@ -59,7 +58,7 @@ if __name__ == "__main__":
             continue
         
         op_replied, me_replied = check_submission_reply_authors(submission)
-        print(op_replied, me_replied)
+        # print(op_replied, me_replied)
 
         if not op_replied and not me_replied:
             print("Removing post due to no OP reply")
